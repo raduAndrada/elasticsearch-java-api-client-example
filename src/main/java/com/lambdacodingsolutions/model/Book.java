@@ -2,6 +2,7 @@ package com.lambdacodingsolutions.model;
 
 /**
  * @author Andrada Radu on 16.03.2022
+ * Model class to test the functionality of the ES client
  */
 public class Book {
 

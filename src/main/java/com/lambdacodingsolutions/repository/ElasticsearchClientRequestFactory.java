@@ -25,9 +25,16 @@ import java.util.stream.Collectors;
 
 /**
  * @author Andrada Radu on 16.03.2022
+ * Creates queries for the ES client
  */
 public class ElasticsearchClientRequestFactory {
 
+  /**
+   * Create an index request
+   * @param index the name for the index
+   * @param clasz the class of the object to be indexed
+   * @return the index request with a properties map for the class of the document
+   */
   public static CreateIndexRequest createCreateIndexRequest(String index, Class clasz) {
     TypeMapping typeMapping = new TypeMapping.Builder()
         .properties(getClassElasticPropertiesMap(clasz))
@@ -39,6 +46,13 @@ public class ElasticsearchClientRequestFactory {
         .build();
   }
 
+  /**
+   * Create an index for a given document
+   * @param index the index name
+   * @param id the id for the indexed entity
+   * @param entity the document to be indexed
+   * @return the request for the ES client
+   */
   public static IndexRequest createIndexRequest(String index, String id, Object entity) {
     return new IndexRequest.Builder()
         .id(id)
@@ -47,6 +61,12 @@ public class ElasticsearchClientRequestFactory {
         .build();
   }
 
+  /**
+   * Creates a multiget request
+   * @param id the id we're searching for on the indicated indices
+   * @param indices the indices across we search for the given id
+   * @return the mget request
+   */
   public static MgetRequest createMgetRequest(String id, String... indices) {
     List<MultiGetOperation> docs = Arrays.asList(indices).stream()
         .map(e -> new MultiGetOperation.Builder()
@@ -58,6 +78,13 @@ public class ElasticsearchClientRequestFactory {
         .build();
   }
 
+  /**
+   * Create a search by template request
+   * @param index the index on which we use the template to find the given document
+   * @param query the template query for the search
+   * @param params the params for the query (if any are given)
+   * @return the request for the client
+   */
   public static SearchTemplateRequest createSearchTemplateRequest(String index, String query, Map<String, JsonData> params) {
     SearchTemplateRequest.Builder searchTemplateBuilder = new SearchTemplateRequest.Builder()
         .source(query)
@@ -68,18 +95,34 @@ public class ElasticsearchClientRequestFactory {
     return searchTemplateBuilder.build();
   }
 
+  /**
+   * Deletes a given index
+   * @param indexName the name of the index to be deleted
+   * @return the delete request
+   */
   public static DeleteIndexRequest createDeleteIndexRequest(String indexName){
     return new DeleteIndexRequest.Builder()
         .index(indexName)
         .build();
   }
 
+  /**
+   * Creates an index exists request
+   * @param indexName the name of the index
+   * @return the request to check if an index exists or not
+   */
   public static ExistsRequest createExistsRequest(String indexName){
     return new ExistsRequest.Builder()
         .index(indexName)
         .build();
   }
 
+  /**
+   * Creates a bulk delete request
+   * @param index the index on which we remove the given documents
+   * @param documents the ids of the documents up for removal
+   * @return the bulk request
+   */
   public static BulkRequest createDeleteBulkRequest(String index, List<String> documents){
     return new BulkRequest.Builder()
         .operations(createBulkOperationsList(index, documents))
@@ -87,6 +130,12 @@ public class ElasticsearchClientRequestFactory {
         .build();
   }
 
+  /**
+   * Creates a list of BulkOperations
+   * @param index the index for the operations
+   * @param documents the ids for the operations
+   * @return the list of bulk operations for a bulk request
+   */
   public static List<BulkOperation> createBulkOperationsList(String index, List<String> documents){
     return documents.stream()
         .map(e -> new BulkOperation(new DeleteOperation.Builder()
@@ -96,6 +145,11 @@ public class ElasticsearchClientRequestFactory {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Builds the properties map for in index request for a given class
+   * @param clasz the class of the documents to be indexed
+   * @return the map with the props
+   */
   private static Map<String, Property> getClassElasticPropertiesMap(Class clasz) {
     Map<String, Property> propertyMap = new HashMap<>();
     Arrays.stream(clasz.getFields())
